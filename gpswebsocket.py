@@ -10,6 +10,7 @@ import socket
 from base64 import b64decode
 from hashlib import sha1
 from copy import copy
+import local
 
 #
 # Global data to be accessed from multipple requests
@@ -48,7 +49,7 @@ def listenforevents(environ, start_response):
         
         info('email',email)
         info('auth', authkey)
-        checkauth = sha1(email+'jauf89349nvNV31231').hexdigest()
+        checkauth = sha1(email+local.key).hexdigest()
         
         
         if authkey != checkauth:
