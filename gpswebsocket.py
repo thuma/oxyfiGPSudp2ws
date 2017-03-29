@@ -11,6 +11,9 @@ from base64 import b64decode
 from hashlib import sha1
 from copy import copy
 import local
+import trafiklabapi
+import urlparse
+import json
 
 #
 # Global data to be accessed from multipple requests
@@ -22,11 +25,13 @@ def info(name, *args):
     t = str(name)
     for a in args:
        t = t + "," + str(a)
-    print t 
+    print t
+
 #
 # Listen for WebSocket and attach WebSocket to the listeners array.
 #
 def listenforevents(environ, start_response):
+
     info('ws_request', environ['PATH_INFO'])
     global listeners
     if environ['PATH_INFO'].startswith('/listen'):
@@ -36,38 +41,34 @@ def listenforevents(environ, start_response):
             start_response('200 OK', [('Content-Type', 'text/plain')])
             info('no ws found',environ)
             info('test',environ['wsgi.input'])
-	    return "Only ws support"
-	
-        try:
-            (email, authkey) = b64decode(environ['QUERY_STRING']).split('@@')
-        except:
+        return "Only ws support"
+
+        getdata = urlparse.parse_qs(environ['QUERY_STRING'])
+        
+        if 'key' in  getdata:
+            keydata = trafiklabapi.getOneKey(getdata['key'])
+            if keydata["Active"] == True:
+                info('Authok', getdata['key'])
+                key = getdata['key']
+            else:
+                ws.send('authincorrect')
+                return None
+        else:
             ws.send('authincorrect')
             return None
 
-        listeners[email] = []
-        active[email] = ws
-        
-        info('email',email)
-        info('auth', authkey)
-        checkauth = sha1(email+local.key).hexdigest()
-        
-        
-        if authkey != checkauth:
-            ws.send('authincorrect')
-            return None
+        listeners[key] = ws
 
         while 1:
-            if active[email] != ws:
-                break
 
-            if len(listeners[email]) > 0:
-                tosend = listeners[email].pop(0)
+            if len(listeners[key]) > 0:
+                tosend = listeners[key].pop(0)
                 try:
                     ws.send(tosend)
                 except:
                     break
             else:
-                sleep(1)
+                sleep(0.1)
 
         info("websocketend", ws)
 
@@ -76,42 +77,96 @@ def listenforevents(environ, start_response):
 #
 def sendcall(environ, start_response):
     global listeners
-
+    
     # Headers for return on text / json  = error / ok.
     textheader = [
         ('Content-Type', 'text/plain'),
-        #('Access-Control-Allow-Origin', 'http://46elks.dev:80'),
         ('Access-Control-Allow-Credentials', 'true')]
 
-    headers = [
+    jsonheaders = [
         ('Content-Type', 'application/json'),
-        #('Access-Control-Allow-Origin', 'http://46elks.dev:80'),
         ('Access-Control-Allow-Credentials', 'true')]
 
     info('request', environ['PATH_INFO'], environ['REQUEST_METHOD'])
 
-    #
-    # Incoming SMS
-    #
-    if environ['PATH_INFO'] == '/list':
+    if environ['HTTP_AUTHORIZATION'] not in local.auth:
+        start_response('401 Unauthorized', textheader)
+        return['Credentials incorrect']
 
-        start_response('200 OK', textheader)
-        users = []
-        for one in listeners:
-            users.append(one)
-        info(','.join(users))
-        return[','.join(users)]
+    get = False
+    post = False
+    put = False
+    delete = False
+    
+    if environ['REQUEST_METHOD'] == 'GET':
+        get = True
+    elif  environ['REQUEST_METHOD'] == 'POST':
+        post = json.loads(environ['wsgi.input'].read())
+    elif  environ['REQUEST_METHOD'] == 'PUT':
+        put = json.loads(environ['wsgi.input'].read())
+    elif  environ['REQUEST_METHOD'] == 'DELETE':
+        delete = True
+
+    if environ['PATH_INFO'] == '/trafiklab/v1/apikeys/apis/oxygps/profiles' and get:
+        start_response('200 OK', jsonheaders)
+        return ['''
+[
+    {
+        "Id": "One",
+        "Name": "Standard",
+        "Api": "oxygps",
+        "RateLimit": {
+            "Month": 24000,
+            "Minute": 6
+         },
+        "Default": true,
+        "CreatedDate": "2017-01-01T15:00:00.000Z",
+        "UpdatedDate": "2017-01-01T15:00:00.000Z"
+    }
+]
+''']
+     
+    if environ['PATH_INFO'] == '/trafiklab/v1/apikeys/apis/oxygps/keys' and post:
+        start_response('200 OK', jsonheaders)
+        newkey = trafiklabapi.makeKey(post)
+        info('newkeycreated')
+        return [json.dumps(newkey)]
+
+    if environ['PATH_INFO'] == '/trafiklab/v1/apikeys/apis/oxygps/keys' and get:
+        start_response('200 OK', jsonheaders)
+        list = []
+        for key in trafiklabapi.getAllKeys():
+            list.append(key)
+        return [json.dumps(list)]
+    
+    if environ['PATH_INFO'].startswith('/trafiklab/v1/apikeys/keys/') and get:
+        start_response('200 OK', jsonheaders)
+        key = environ['PATH_INFO'].split("/")[-1]
+        keydata = trafiklabapi.getOneKey(key)
+        return [json.dumps(keydata)]
+    
+    if environ['PATH_INFO'].startswith('/trafiklab/v1/apikeys/keys/') and put:
+        start_response('200 OK', jsonheaders)
+        key = environ['PATH_INFO'].split("/")[-1]
+        return [json.dumps(trafiklabapi.updateKey(key,put))]
+
+    if environ['PATH_INFO'].startswith('/trafiklab/v1/apikeys/keys/') and delete:
+        start_response('200 OK', jsonheaders)
+        key = environ['PATH_INFO'].split("/")[-1]
+        keydata = trafiklabapi.dissableKey(key)
+        return [json.dumps(keydata)]
+
     else:
         start_response('404 Not Found', textheader)
         return['']
-        
+
 def sendtoall(data):
     global listeners
     for one in listeners:
         listeners[one].append(data)
 
 def runsocket():
-    UDP_IP = "195.154.5.127"
+    UDP_IP = local.ip
     UDP_PORT = 6565
     sock = socket.socket(socket.AF_INET, # Internet
                       socket.SOCK_DGRAM) # UDP
