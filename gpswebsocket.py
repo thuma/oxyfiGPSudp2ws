@@ -107,7 +107,7 @@ def sendcall(environ, start_response):
     elif  environ['REQUEST_METHOD'] == 'DELETE':
         delete = True
 
-    if environ['PATH_INFO'] == '/trafiklab/v1/apikeys/apis/oxygps/profiles' and get:
+    if environ['PATH_INFO'] == '/v1/apikeys/apis/oxygps/profiles' and get:
         start_response('200 OK', jsonheaders)
         return ['''
 [
@@ -126,31 +126,31 @@ def sendcall(environ, start_response):
 ]
 ''']
      
-    if environ['PATH_INFO'] == '/trafiklab/v1/apikeys/apis/oxygps/keys' and post:
+    if environ['PATH_INFO'] == '/v1/apikeys/apis/oxygps/keys' and post:
         start_response('200 OK', jsonheaders)
         newkey = trafiklabapi.makeKey(post)
         info('newkeycreated')
         return [json.dumps(newkey)]
 
-    if environ['PATH_INFO'] == '/trafiklab/v1/apikeys/apis/oxygps/keys' and get:
+    if environ['PATH_INFO'] == '/v1/apikeys/apis/oxygps/keys' and get:
         start_response('200 OK', jsonheaders)
         list = []
         for key in trafiklabapi.getAllKeys():
             list.append(key)
         return [json.dumps(list)]
     
-    if environ['PATH_INFO'].startswith('/trafiklab/v1/apikeys/keys/') and get:
+    if environ['PATH_INFO'].startswith('/v1/apikeys/keys/') and get:
         start_response('200 OK', jsonheaders)
         key = environ['PATH_INFO'].split("/")[-1]
         keydata = trafiklabapi.getOneKey(key)
         return [json.dumps(keydata)]
     
-    if environ['PATH_INFO'].startswith('/trafiklab/v1/apikeys/keys/') and put:
+    if environ['PATH_INFO'].startswith('/v1/apikeys/keys/') and put:
         start_response('200 OK', jsonheaders)
         key = environ['PATH_INFO'].split("/")[-1]
         return [json.dumps(trafiklabapi.updateKey(key,put))]
 
-    if environ['PATH_INFO'].startswith('/trafiklab/v1/apikeys/keys/') and delete:
+    if environ['PATH_INFO'].startswith('/v1/apikeys/keys/') and delete:
         start_response('200 OK', jsonheaders)
         key = environ['PATH_INFO'].split("/")[-1]
         keydata = trafiklabapi.dissableKey(key)
@@ -167,7 +167,7 @@ def sendtoall(data):
 
 def runsocket():
     UDP_IP = local.ip
-    UDP_PORT = 6565
+    UDP_PORT = local.port
     sock = socket.socket(socket.AF_INET, # Internet
                       socket.SOCK_DGRAM) # UDP
     sock.bind((UDP_IP, UDP_PORT))
@@ -184,8 +184,8 @@ class nologgerclass(object):
 
 nologger = nologgerclass()
 
-websocketport = 7070
-webapiport = 7080
+websocketport = 7071
+webapiport = 7081
 
 info('Starting WS on port %s' % websocketport)
 wsserver = pywsgi.WSGIServer(("", websocketport), listenforevents, log = nologger , handler_class=WebSocketHandler)
