@@ -97,6 +97,10 @@ def sendcall(environ, start_response):
 
     info('request', environ['PATH_INFO'], environ['REQUEST_METHOD'])
 
+    if 'HTTP_AUTHORIZATION' not in environ:
+        start_response('401 Unauthorized', textheader)
+        return['Basic Auth Required']
+
     if environ['HTTP_AUTHORIZATION'] not in local.auth:
         start_response('401 Unauthorized', textheader)
         return['Credentials incorrect']
