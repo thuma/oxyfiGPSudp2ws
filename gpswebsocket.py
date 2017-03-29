@@ -72,6 +72,14 @@ def listenforevents(environ, start_response):
 
         info("websocketend", ws)
 
+def wrapper(data):
+    return json.dumps({
+            "StatusCode" : 200,
+            "Message" : "",
+            "ExecutionTime" : 72,
+            "ResponseData" : data }
+            )
+ 
 #
 # Handle incoming requests.
 #
@@ -109,52 +117,50 @@ def sendcall(environ, start_response):
 
     if environ['PATH_INFO'] == '/v1/apikeys/apis/oxygps/profiles' and get:
         start_response('200 OK', jsonheaders)
-        return ['''
-[
-    {
-        "Id": "One",
-        "Name": "Standard",
-        "Api": "oxygps",
-        "RateLimit": {
-            "Month": 24000,
-            "Minute": 6
-         },
-        "Default": true,
-        "CreatedDate": "2017-01-01T15:00:00.000Z",
-        "UpdatedDate": "2017-01-01T15:00:00.000Z"
-    }
-]
-''']
+        return [wrapper([
+            {
+            "Id": "One",
+            "Name": "Standard",
+            "Api": "oxygps",
+            "RateLimit": {
+                "Month": 24000,
+                "Minute": 6
+                },
+            "Default": true,
+            "CreatedDate": "2017-01-01T15:00:00.000Z",
+            "UpdatedDate": "2017-01-01T15:00:00.000Z"
+            }
+        ])]
      
     if environ['PATH_INFO'] == '/v1/apikeys/apis/oxygps/keys' and post:
         start_response('200 OK', jsonheaders)
         newkey = trafiklabapi.makeKey(post)
         info('newkeycreated')
-        return [json.dumps(newkey)]
+        return [wrapper(newkey)]
 
     if environ['PATH_INFO'] == '/v1/apikeys/apis/oxygps/keys' and get:
         start_response('200 OK', jsonheaders)
         list = []
         for key in trafiklabapi.getAllKeys():
             list.append(key)
-        return [json.dumps(list)]
+        return [wrapper(list)]
     
     if environ['PATH_INFO'].startswith('/v1/apikeys/keys/') and get:
         start_response('200 OK', jsonheaders)
         key = environ['PATH_INFO'].split("/")[-1]
         keydata = trafiklabapi.getOneKey(key)
-        return [json.dumps(keydata)]
+        return [wrapper(keydata)]
     
     if environ['PATH_INFO'].startswith('/v1/apikeys/keys/') and put:
         start_response('200 OK', jsonheaders)
         key = environ['PATH_INFO'].split("/")[-1]
-        return [json.dumps(trafiklabapi.updateKey(key,put))]
+        return [wrapper(trafiklabapi.updateKey(key,put))]
 
     if environ['PATH_INFO'].startswith('/v1/apikeys/keys/') and delete:
         start_response('200 OK', jsonheaders)
         key = environ['PATH_INFO'].split("/")[-1]
         keydata = trafiklabapi.dissableKey(key)
-        return [json.dumps(keydata)]
+        return [wrapper(keydata)]
 
     else:
         start_response('404 Not Found', textheader)
