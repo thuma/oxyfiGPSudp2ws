@@ -34,6 +34,8 @@ def listenforevents(environ, start_response):
 
     info('ws_request', environ['PATH_INFO'])
     global listeners
+    global active
+
     if environ['PATH_INFO'].startswith('/listen'):
         try:
             ws = environ['wsgi.websocket']
@@ -44,9 +46,9 @@ def listenforevents(environ, start_response):
         return "Only ws support"
 
         getdata = urlparse.parse_qs(environ['QUERY_STRING'])
-        
+
         if 'key' in  getdata:
-            keydata = trafiklabapi.getOneKey(getdata['key'])
+            keydata = trafiklabapi.getOneKey(getdata['key'][0])
             if keydata["Active"] == True:
                 info('Authok', getdata['key'])
                 key = getdata['key']
@@ -57,9 +59,13 @@ def listenforevents(environ, start_response):
             ws.send('authincorrect')
             return None
 
-        listeners[key] = ws
+        active[key] = ws
+        listeners[key] = []
 
         while 1:
+
+            if active[key] != ws:
+                break
 
             if len(listeners[key]) > 0:
                 tosend = listeners[key].pop(0)
@@ -68,9 +74,12 @@ def listenforevents(environ, start_response):
                 except:
                     break
             else:
-                sleep(0.1)
+                sleep(0.5)
 
         info("websocketend", ws)
+        if active[key] == ws:
+            del listeners[key]
+            del active[key]
 
 def wrapper(data):
     return json.dumps({
