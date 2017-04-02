@@ -139,7 +139,7 @@ def sendcall(environ, start_response):
                 "Month": 24000,
                 "Minute": 6
                 },
-            "Default": true,
+            "Default": True,
             "CreatedDate": "2017-01-01T15:00:00.000Z",
             "UpdatedDate": "2017-01-01T15:00:00.000Z"
             }
