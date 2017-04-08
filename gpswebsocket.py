@@ -46,12 +46,12 @@ def listenforevents(environ, start_response):
             return "Only ws support"
 
         getdata = urlparse.parse_qs(environ['QUERY_STRING'])
-        print getdata
+
         if 'key' in  getdata:
             keydata = trafiklabapi.getOneKey(getdata['key'][0])
             if keydata["Active"] == True:
                 info('Authok', getdata['key'])
-                key = getdata['key']
+                key = getdata['key'][0]
             else:
                 ws.send('authincorrect')
                 return None
@@ -63,7 +63,6 @@ def listenforevents(environ, start_response):
         listeners[key] = []
 
         while 1:
-            info("websocktread", ws)
             if active[key] != ws:
                 break
 
