@@ -43,10 +43,10 @@ def listenforevents(environ, start_response):
             start_response('200 OK', [('Content-Type', 'text/plain')])
             info('no ws found',environ)
             info('test',environ['wsgi.input'])
-        return "Only ws support"
+            return "Only ws support"
 
         getdata = urlparse.parse_qs(environ['QUERY_STRING'])
-
+        print getdata
         if 'key' in  getdata:
             keydata = trafiklabapi.getOneKey(getdata['key'][0])
             if keydata["Active"] == True:
@@ -63,7 +63,7 @@ def listenforevents(environ, start_response):
         listeners[key] = []
 
         while 1:
-
+            info("websocktread", ws)
             if active[key] != ws:
                 break
 
@@ -190,7 +190,7 @@ def runsocket():
     sock = socket.socket(socket.AF_INET, # Internet
                       socket.SOCK_DGRAM) # UDP
     sock.bind((UDP_IP, UDP_PORT))
-
+    print "ip: %s port: %s" % (UDP_IP, UDP_PORT)
     while True:
         data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
         sendtoall(data)
