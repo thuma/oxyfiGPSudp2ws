@@ -9,8 +9,10 @@
 
 ## Usage
 Listen with websocket:
-ws://trainpos.oxyfi.com/trafiklab/v1/listen?key=<your key>
-wss://trainpos.oxyfi.com/trafiklab/v1/listen?key=<your key>
+
+ws://trainpos.oxyfi.com/trafiklab/v1/listen?key=your-key
+
+wss://trainpos.oxyfi.com/trafiklab/v1/listen?key=your-key
 
 ## Data frames:
 
