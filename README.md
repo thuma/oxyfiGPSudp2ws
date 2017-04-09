@@ -15,6 +15,7 @@ ws://trainpos.oxyfi.com/trafiklab/v1/listen?key=your-key
 wss://trainpos.oxyfi.com/trafiklab/v1/listen?key=your-key
 
 ## Data frames:
+The data is fomated in the nmea standard $GPRMC (Recommended minimum specific GPS/Transit data)[http://aprs.gids.nl/nmea/#rmc](http://aprs.gids.nl/nmea/#rmc), there is also some aditional data added after the $GPRMC string with information about the train and data.
 
 ### Example:
 $GPRMC,054031.0,A,6238.017143,N,01755.565469,E,0.0,208.2,080417,0.0,E,A*00,,62008.trains.se,,17405.public.trains.se@2017-04-08;17405.internal.trains.se@2017-04-08,oxyfi
