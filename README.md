@@ -40,4 +40,9 @@ $GPRMC,054031.0,A,6238.017143,N,01755.565469,E,0.0,208.2,080417,0.0,E,A*00,,6200
 | 15 |1421.trains.se|Identifies the vehicle, 1421 in this case (Värmlandstrafik)|   
 | 16 |n/a|Not used|   
 | 17 |8955.public.trains.se@2012-12-10;8957.public.trains.se@2012-12-10|Train identities concatenated with semicolon if more than one is present. Empty if train is not in traffic.|   
-| 18 |oxyfi|Data origin|  
+| 18 |oxyfi|Data origin| 
+
+## Checksum
+The checksum field that starts with '*' and two hex digits representing an 8 bit exclusive OR of all characters between, but not including, the '$' and '*'.
+
+
