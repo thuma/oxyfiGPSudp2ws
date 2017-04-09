@@ -46,4 +46,14 @@ $GPRMC,054031.0,A,6238.017143,N,01755.565469,E,0.0,208.2,080417,0.0,E,A*00,,6200
 ## Checksum
 The checksum field that starts with '*' and two hex digits representing an 8 bit exclusive OR of all characters between, but not including, the '$' and '*'.
 
+## Libs
+JS: https://www.npmjs.com/package/nmea-0183
+Python: https://github.com/Knio/pynmea2
+Java: http://nmealib.sourceforge.net/
+Ruby: https://github.com/ifreecarve/nmea_plus
+GO: https://github.com/buxtronix/golang/blob/master/nmea/src/nmea/gprmc.go
+C#: https://github.com/amezcua/GPS-NMEA-Parser/blob/master/C%23/GPRMCGpsSentence.cs
+C: https://github.com/jacketizer/libnmea, http://nmea.sourceforge.net/
+
+
 
