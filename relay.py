@@ -26,16 +26,14 @@ def listenforevents(environ, start_response):
         return "Only ws support."
     listeners[key] = []
     while 1:
-        if active[key] != ws:
-            break
-            if len(listeners[key]) > 0:
-                tosend = listeners[key].pop(0)
-                try:
-                    ws.send(tosend)
-                except:
-                    break
-            else:
-                sleep(0.25)
+        if len(listeners[key]) > 0:
+            tosend = listeners[key].pop(0)
+            try:
+                ws.send(tosend)
+            except:
+                break
+        else:
+            sleep(0.25)
     del listeners[key]
 
 def sendtoall(data):
@@ -57,7 +55,6 @@ wsserver.start()
 
 def on_message(ws, message):
     sendtoall(message.strip())
-    print message.strip()
 
 def on_error(ws, error):
     print error
