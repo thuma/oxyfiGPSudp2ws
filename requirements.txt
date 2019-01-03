@@ -2,3 +2,4 @@ lmdb
 gevent
 gevent-websocket
 websocket-client
+pymongo
