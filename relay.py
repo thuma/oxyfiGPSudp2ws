@@ -14,7 +14,7 @@ from datetime import datetime
 # Global data to be accessed from multipple requests
 #
 listeners = {}
-db = MongoClient().trainpos
+db = MongoClient().trv
 
 # Listen for WebSocket and attach WebSocket to the listeners array.
 #
